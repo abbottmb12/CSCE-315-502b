@@ -1,20 +1,20 @@
 #include <iostream>
 #include "Relation.h"
+#include "Database.h"
+#include "Attribute.h"
+
 using namespace std;
+
 int main(){
-	//Table T;
-	//string file = "Cars.txt";
-	//T.read(file);
-	//T.dis_table();
-	Attribute<int> a;
-	Attribute<int> b;
-	a.cell.push_back(2);
-	b.cell.push_back(3);
-	Relation r;
-	r.add_attr((void*)&b);
-	Attribute<int>* attr = static_cast<Attribute<int>*>(r.attr[0]);
-	//cout << attr->getCells()[0] << endl;
-	cout << (&a)->cell[0] << endl;
-	cout << &b << endl;
-	return 0;
+  Database d;
+  d.Create("Cars", "Make", "Year", "Model");
+  d.Insert("Cars", "Audi", 2013,"R8");
+  d.Insert("Cars", "Chevrolet", 2011,"Cobalt");
+  d.Insert("Cars", "Mercedes",2010,"Benz");
+  d.Insert("Cars", "Dodge",2009,"Charger");
+  d.Insert("Cars", "Nissan", 2006 , "Altima");
+
+  d.Show("Cars");
+
+  return 0;
 }
