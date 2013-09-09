@@ -16,75 +16,98 @@ using namespace std;
 class Relation{
   public:
     vector< Attribute > attr;
-	string name;
+    string name;
     Relation() {}
-    void add_attr(Attribute& a) {
+    Relation(const string& name){
+      Create(name);
+    }
+    void add_attr(const Attribute& a) {
       attr.push_back(a);
     }
-    Attribute getAttribute(int n)
+    void add_attr(string nm, Type t) {
+      add_attr(Attribute(t,nm));
+    }
+    Attribute& operator[](size_t col){
+      return attr[col];
+    }
+    Attribute& getAttribute(int n)
     {
-      return attr[n];
+      return (*this)[n];
     }
     int getNumAttributes()
     {
       return attr.size();
     }
-    vector<Cell> getTuple(int n)
+    vector<Cell> getRow(int n)
     {
       vector<Cell> tuple;
-      for(int i = 0; i < 3; i++)
+      for(int i = 0; i < attr.size(); i++)
       {
         tuple.push_back(getAttribute(i).cell[n]);
       }
       return tuple;
     }
 
+    int getRowSize() {
+      return attr[0].getLength();
+    }
+
     void read(string s);
 
-    void Create(string rel_name, string s0, string s1 , string s2) {
-		name = rel_name;
-		Attribute a0, a1, a2;
-		a0.setName(s0);
-		a1.setName(s1);
-		a2.setName(s2);
-		attr.push_back(a0);
-		attr.push_back(a1);
-		attr.push_back(a2);
-	}
+    void Create(string rel_name){
+      name = rel_name;
+    }
 
     void Show() {
       vector<Cell> tuple;
-      Attribute intsecho = getAttribute(0);
-      Attribute charsecho = getAttribute(1);
-      Attribute char2echo = getAttribute(2);
-      cout << "\n-----------------------------------" << endl;
-      cout <<"            DATABASE TABLE           " << endl;
-      cout <<"-----------------------------------" << endl;
-      cout << intsecho.getName() << setw(15) << charsecho.getName() << setw(15) << char2echo.getName() << endl;
-      cout <<"-----------------------------------" << endl;
-      int s = 0;
-      int s2 = 1;
-      int s3 = 2;
+      cout << "\n\n          ------------------------------------" << endl;
+      cout << "           " << name << " TABLE           " << endl;
+      cout << "          ------------------------------------" << endl;
+      for(int i = 0; i< attr.size(); i++) {
+        cout << setw(15) << getAttribute(i).getName() << setw(15);
+      }
+      cout << endl;
+      cout <<"          ------------------------------------" << endl;
 
-      for(int i=0; i < attr[0].getLength(); ++i) {
-        tuple = getTuple(i);
-        cout << tuple[0].value.c << setw(15) << tuple[1].value.i << setw(15) << tuple[2].value.c << endl;
-		}
+      for(int r=0; r < attr[0].getLength(); ++r) {
+        for(int c = 0; c< attr.size(); c++){
+          cout << setw(15) << (*this)[c][r];
+        }
+        cout << endl;
+		cout << endl;
+      }
     }
 
-    void Insert(char* s1, int i1 , char* s2) { 
-      Value v1, v2 , v3;
-      v1.c = s1;
-	  v2.i = i1;
-      v3.c = s2;
-	
-      attr[0].push_back(v1);
-      attr[1].push_back(v2);
-	  attr[2].push_back(v3);
+    void Rename(string new_name, string old_name) {
+      for(int i =0; i < attr.size(); i++) {
+        if(old_name == attr[i].name) {
+          attr[i].name = new_name;
+        }
+      }
+    }
+
+    void Insert(const vector<Cell>& row) { 
+      for(int c = 0; c< attr.size(); c++)
+        (*this)[c].push_back(row[c]);
     }
 
     void Write() {
       cout << "Requires File I/O, will be implemented in the next part " << endl;
     }
+
+    void Delete_attr(const string& attribute) {
+      for(int i =0; i < attr.size(); i++) {
+        for(int j = 0; j < attr[0].getLength(); j++) {
+          if(attribute == attr[i][j]) {
+            cout << "Found " << attr[i][j] << endl;
+            attr[i][j] = "";
+            cout << "Deleted " << attribute << endl;
+            return;
+          }
+        }
+      }
+      cout << "Did not find " << attribute << " in the relation" << endl;
+    }
+
 };
 #endif
