@@ -1,7 +1,125 @@
 #include "Database.h"
 #include <algorithm> 
-void Database:: Selection(Relation name, string attr_name) {
-
+void Database:: Project(vector<string> attr_name, string rel_name){
+	for (int i = 0; i < relation.size(); ++i){
+		if (rel_name == relation[i].name){
+			Relation new_projection;
+			new_projection.name = "Projection";
+			for (int j = 0; j < attr_name.size(); ++j){
+				int attr_loc;
+				attr_loc = (relation[i].findAttribute(attr_name[j]));
+				if (attr_loc != -1){
+					new_projection.attr.push_back(relation[i].attr[attr_loc]);
+				}
+				else
+					cerr << "No attribute '" << attr_name[j] << "' was found in " << rel_name <<"." << endl;
+			}
+			if (new_projection.attr.size() == 0){
+				cerr << "None of the attributes requested were found to be projected from '" << rel_name << "'." <<endl;
+				return;
+			}
+			else 
+				Projection = new_projection;
+			return;
+		}
+	}	
+	cerr << "I did not find anything called "<< rel_name << endl;
+}
+void Database:: Select(string attr_name, string condition, string cell_condition, string rel_name) {
+	for (int i = 0; i < relation.size(); ++i){
+		if (rel_name == relation[i].name){
+			int attr_loc = relation[i].findAttribute(attr_name);
+			if (attr_loc != -1){
+				Relation new_selection = relation[i];
+				new_selection.clear_attr_cells();
+				new_selection.name = "Selection";
+				vector<string> getCells = relation[i].attr[attr_loc].getCells();
+				vector<int> condition_metLoc;
+				if(condition == ">"){
+					if(relation[i].attr[attr_loc].getType() == INT){
+						for (int j = 0; j < getCells.size(); ++j){
+							int getCell = atoi(getCells[j].c_str());//conversion from string to int
+							int cell_cond = atoi(cell_condition.c_str());
+							if (getCell > cell_cond){
+								condition_metLoc.push_back(j);
+								}
+						}
+					}
+					else
+						cerr << "The attribute '" << attr_name << "' in relation '" << rel_name << "' is not of int type." << endl;
+				}
+				else if(condition == "<"){
+					if(relation[i].attr[attr_loc].getType() == INT){
+						for (int j = 0; j < getCells.size(); ++j){
+							int getCell = atoi(getCells[j].c_str());//conversion from string to int
+							int cell_cond = atoi(cell_condition.c_str());
+							if (getCell < cell_cond){
+								condition_metLoc.push_back(j);
+								}
+						}
+					}
+					else
+						cerr << "The attribute '" << attr_name << "' in relation '" << rel_name << "' is not of int type." << endl;
+				}
+				else if(condition == "<="){
+					if(relation[i].attr[attr_loc].getType() == INT){
+						for (int j = 0; j < getCells.size(); ++j){
+							int getCell = atoi(getCells[j].c_str());//conversion from string to int
+							int cell_cond = atoi(cell_condition.c_str());
+							if (getCell <= cell_cond){
+								condition_metLoc.push_back(j);
+								}
+						}
+					}
+					else
+						cerr << "The attribute '" << attr_name << "' in relation '" << rel_name << "' is not of int type." << endl;
+				}
+				else if(condition == ">="){
+					if(relation[i].attr[attr_loc].getType() == INT){
+						for (int j = 0; j < getCells.size(); ++j){
+							int getCell = atoi(getCells[j].c_str());//conversion from string to int
+							int cell_cond = atoi(cell_condition.c_str());
+							if (getCell >= cell_cond){
+								condition_metLoc.push_back(j);
+								}
+						}
+					}
+					else
+						cerr << "The attribute '" << attr_name << "' in relation '" << rel_name << "' is not of int type." << endl;
+				}
+				else if(condition == "=="){
+					for (int j = 0; j < getCells.size(); ++j){
+						if (getCells[j] == cell_condition){
+							condition_metLoc.push_back(j);
+							}
+					}
+				}
+				else if(condition == "!="){
+					for (int j = 0; j < getCells.size(); ++j){
+						if (getCells[j] != cell_condition){
+							condition_metLoc.push_back(j);
+							}
+					}
+				}
+				else 
+					cerr << "Not a valid condition, use '>', '<', or '=='." << endl;
+				if(condition_metLoc.size() == 0){
+						cerr << "No cells were found to meet that condition in attribute '" << attr_name << "' of relation '" << rel_name << "'." <<endl;
+						return;
+					}
+				else{
+					for (int j = 0; j < condition_metLoc.size(); ++j){
+						new_selection.Insert(relation[i].getRow(condition_metLoc[j]));
+						Selection = new_selection;
+					}
+				}
+				return;
+			}
+			else cerr << "No attribute '" << attr_name << "' was found in " << rel_name <<"." << endl;
+			return;
+		}
+	}
+	cerr << "I did not find anything called "<< rel_name << endl;
 }
 
 void Database::Delete_attr(const string& rel_name,const string& attribute) {
@@ -80,20 +198,36 @@ void Database::Union(const string& rel_name1,const string& rel_name2) {
       break;
     }
   }
-  Create(rel_name1+rel_name2+"Union");
-  bool insrt = true;
-  
-  int i1Rowsize = relation[i1].getRowSize();
-  int jrowsize = relation[i2].getRowSize();
-  for(int j=0; j < jrowsize; j++) {
-    for(int i=0; i < relation[i1].getRowSize(); i++) {
-      if(relation[i2].getRow(j) == relation[i1].getRow(i)) {
-        break;
-      }
-      if(i==jrowsize-1){
-        Insert(relation[i1].name,relation[i2].getRow(j));
-        break;
+  bool canInsert = true;
+  if(relation[i1].getNumAttributes() == relation[i2].getNumAttributes()) {
+  for(int i=0; i<relation[i1].getNumAttributes();i++){
+    if(relation[i1].getAttributeType(i) != relation[i2].getAttributeType(i)) {
+      cout << "Attributes do not have the same type, cannot insert " << endl;
+      canInsert = false;
+    }
+  }
+
+
+    //Create(rel_name1+rel_name2+"Union");
+    bool insrt = true;
+
+    int i1Rowsize = relation[i1].getRowSize();
+    int jrowsize = relation[i2].getRowSize();
+    if(canInsert){
+    for(int j=0; j < jrowsize; j++) {
+      for(int i=0; i < relation[i1].getRowSize(); i++) {
+        if(relation[i2].getRow(j) == relation[i1].getRow(i)) {
+          break;
+        }
+        if(i==jrowsize-1){
+          Insert(relation[i1].name,relation[i2].getRow(j));
+          break;
+        }
       }
     }
-  } 
+    }
+  }
+  else {
+    cout << "Size does not match " << endl;
+  }
 }
