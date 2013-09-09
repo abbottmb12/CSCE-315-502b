@@ -8,9 +8,12 @@ class Database {
   public:
     typedef map<string,Relation> Table;
     vector<Relation> relation;
-  Database(){};
+	Relation Selection;
+	Relation Projection;
+	Database(){Selection.name = "Selection"; Projection.name = "Projection";};
     Table table;
-    void Selection(Relation name, string attr_name);
+    void Select(string attr_name, string condition, string cell_condition, string rel_name);
+	void Project(vector<string> attr_name, string rel_name);
     void Create(string rel_name);
     void AddColumn(const string& rel_name, const Header& h);
     void Insert(string rel_name, const vector<Cell>& row);
