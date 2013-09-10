@@ -11,7 +11,7 @@ enum Type {INT, STRING};
 
 typedef pair<string, Type> Header;
 
-class Attribute{
+class Attribute{//attribute can have int or string types, has a name, and has a vector of different cells
   public:
     string name;
   public:
@@ -20,32 +20,31 @@ class Attribute{
     Attribute () {};
     Attribute(Type t, string n) : type(t), name(n) {};
    
-    void push_back(string v)
+    void push_back(string v)//used to insert strings
     {
       cell.push_back(v);
     }
-    vector<string> getCells() const{
+    vector<string> getCells() const{//returns the vector of cells
       return cell;
     }
-    string getName()
+    string getName()//returns the attributes name
     {
       return name;
     }
-	Type getType(){
+	Type getType(){//returns the attributes type
 		return type;
 	}
-	int getLength() const{
+	int getLength() const{//returns the cells size
 		return cell.size();
 	}
-	void setName(string set_name)
+	void setName(string set_name)//changes the attributes name
     {
       name = set_name;
     }
 
-  Cell& operator[](size_t row){
+  Cell& operator[](size_t row){//returns a cell
     return cell[row];
   }
-    //string getName();
 };
 
 #endif
