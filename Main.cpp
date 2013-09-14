@@ -53,13 +53,14 @@ bool name_check(Token_stream& ts, string input){
 			return true;
 		}
 	}
-	for(int i = 0; i<tt.size(); ++i){
-		ts.putback(tt[i]);
+	while(!tt.empty()){
+		ts.putback(tt.back());
+		tt.pop_back();
 	}
 	return false;
 }
 bool show(Token_stream& ts){
-	return name_check(ts, "SHOW") && atomic_expr;
+	return name_check(ts, "SHOW") && atomic_expr(ts);
 }
 bool exit(Token_stream&ts){
 	return name_check(ts, "EXIT");
