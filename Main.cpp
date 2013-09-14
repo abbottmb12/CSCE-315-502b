@@ -50,7 +50,7 @@ bool name_check(Token_stream& ts, string input){
 		tt.push_back(t);
 		if(comp == input){
 			cout << input << endl;
-			return relation_name(ts);
+			return true;
 		}
 	}
 	for(int i = 0; i<tt.size(); ++i){
@@ -58,12 +58,24 @@ bool name_check(Token_stream& ts, string input){
 	}
 	return false;
 }
+bool show(Token_stream& ts){
+	return name_check(ts, "SHOW") && atomic_expr;
+}
+bool exit(Token_stream&ts){
+	return name_check(ts, "EXIT");
+}
+bool write(Token_stream& ts){
+	return name_check(ts, "WRITE") && relation_name(ts);
+}
+bool close(Token_stream& ts){
+	return name_check(ts, "CLOSE") && relation_name(ts);
+}
 bool open(Token_stream& ts){
-	return name_check(ts, "OPEN");
+	return name_check(ts, "OPEN") && relation_name(ts);
 }
 bool command(Token_stream& ts)
 {
-	return open(ts);
+	return open(ts) || close(ts) || write(ts) || exit(ts) || show(ts);
 }
 bool query(Token_stream& ts)
 {
