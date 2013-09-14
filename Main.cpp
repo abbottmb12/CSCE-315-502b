@@ -19,8 +19,6 @@ bool identifier(Token_stream& ts)
 		ts.putback(t);
 		return false;
 	}
-	identifier_name += t.value;
-	t = ts.get();
 	while(t.kind == 'a' || t.kind == '0')
 	{
 		identifier_name += t.value;
@@ -30,7 +28,7 @@ bool identifier(Token_stream& ts)
 		t = ts.get();
 	}
 	ts.putback(t);
-	cout << identifier_name << endl;
+	cout << "REL: " << identifier_name << endl;
 	return true;
 }
 bool relation_name(Token_stream& ts)
@@ -50,22 +48,26 @@ bool name_check(Token_stream& ts, string input){
 	if(t.kind == ' '){
 		t = ts.get();
 	}
+	if(t.kind != 'a')
+	{
+		ts.putback(t);
+		return false;
+	}
 	vector<Token> tt; //keeps track of tokens that are cycled through
-	comp += t.value;
 	tt.push_back(t);
-	while(t.kind == 'a' && (comp.size() != input.size()) ){
-		t = ts.get();
-		if(t.kind == ' '){
-			t = ts.get();
-		}
+	while(t.kind == 'a'){
 		comp += t.value;
+		t = ts.get();	
 		tt.push_back(t);
-		if(comp == input){
-			cout << input << endl;
-			return true;
-		}
+	}
+	if(comp == input){
+		cout << "CMD: " << input << endl;
+		ts.putback(t);
+		return true;
 	}
 	while(!tt.empty()){
+		char c = tt.back().value;
+		cout << c << endl;
 		ts.putback(tt.back());
 		tt.pop_back();
 	}
