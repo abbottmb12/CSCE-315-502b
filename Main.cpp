@@ -11,6 +11,9 @@ bool identifier(Token_stream& ts)
 {
 	string identifier_name = "";
 	Token t = ts.get();
+	if(t.kind == ' '){
+		t = ts.get();
+	}
 	if(t.kind != 'a')
 	{
 		ts.putback(t);
@@ -21,6 +24,9 @@ bool identifier(Token_stream& ts)
 	while(t.kind == 'a' || t.kind == '0')
 	{
 		identifier_name += t.value;
+		t = ts.get();
+	}
+	if(t.kind == ' '){
 		t = ts.get();
 	}
 	ts.putback(t);
@@ -41,11 +47,17 @@ bool atomic_expr(Token_stream& ts){
 bool name_check(Token_stream& ts, string input){
 	string comp = "";
 	Token t = ts.get();
+	if(t.kind == ' '){
+		t = ts.get();
+	}
 	vector<Token> tt; //keeps track of tokens that are cycled through
 	comp += t.value;
 	tt.push_back(t);
-	while(t.kind = 'a' && (comp.size() != input.size()) ){
+	while(t.kind == 'a' && (comp.size() != input.size()) ){
 		t = ts.get();
+		if(t.kind == ' '){
+			t = ts.get();
+		}
 		comp += t.value;
 		tt.push_back(t);
 		if(comp == input){
@@ -58,6 +70,9 @@ bool name_check(Token_stream& ts, string input){
 		tt.pop_back();
 	}
 	return false;
+}
+bool insert(Token_stream& ts){
+	return name_check(ts, "INSERT") && name_check(ts, "INTO") && relation_name(ts) && name_check(ts, "VALUES") && name_check(ts, "FROM");
 }
 bool show(Token_stream& ts){
 	return name_check(ts, "SHOW") && atomic_expr(ts);
@@ -76,7 +91,7 @@ bool open(Token_stream& ts){
 }
 bool command(Token_stream& ts)
 {
-	return open(ts) || close(ts) || write(ts) || exit(ts) || show(ts);
+	return open(ts) || close(ts) || write(ts) || exit(ts) || show(ts) || insert(ts);
 }
 bool query(Token_stream& ts)
 {
