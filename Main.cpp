@@ -7,7 +7,6 @@
 using namespace std;
 
 Token_stream ts;
-
 bool identifier(Token_stream& ts)
 {
 	string identifier_name = "";
@@ -39,18 +38,18 @@ bool expr(Token_stream& ts)
 bool atomic_expr(Token_stream& ts){
 	return relation_name(ts) || expr(ts);
 }
-bool open(Token_stream& ts){
-	string open = "";
+bool name_check(Token_stream& ts, string input){
+	string comp = "";
 	Token t = ts.get();
-	vector<Token> tt; //keeps track of tokens that are cycle through
-	open += t.value;
+	vector<Token> tt; //keeps track of tokens that are cycled through
+	comp += t.value;
 	tt.push_back(t);
-	while(t.kind = 'a' && (open.size() < 4) ){
+	while(t.kind = 'a' && (comp.size() != input.size()) ){
 		t = ts.get();
-		open += t.value;
+		comp += t.value;
 		tt.push_back(t);
-		if(open == "OPEN"){
-			cout << "opened" << endl;
+		if(comp == input){
+			cout << input << endl;
 			return relation_name(ts);
 		}
 	}
@@ -58,7 +57,9 @@ bool open(Token_stream& ts){
 		ts.putback(tt[i]);
 	}
 	return false;
-	
+}
+bool open(Token_stream& ts){
+	return name_check(ts, "OPEN");
 }
 bool command(Token_stream& ts)
 {
