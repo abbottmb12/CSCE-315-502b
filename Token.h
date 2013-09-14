@@ -52,10 +52,11 @@ Token Token_stream::get()
     if(!empty) // do we already have a Token ready?
 	{
         // remove token from buffer
-		Token temp = buffer.front();
-		buffer.erase(buffer.begin());
-		if(buffer.empty())
+		Token temp = buffer.back();
+		buffer.pop_back();
+		if(buffer.empty()){
 			empty = true;
+		}
 		return temp;
     }
 
