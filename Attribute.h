@@ -47,4 +47,5 @@ class Attribute{
   }
     //string getName();
 };
+
 #endif
