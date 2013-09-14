@@ -61,10 +61,12 @@ Token Token_stream::get()
     }
 
     char ch;
-    ss >> ch; // note that >> skips whitespace (space, newline, tab, etc.)
+    ss >> noskipws >> ch; 
 
     switch (ch)
 	{
+		case ' ':
+			return Token(ch);
 		case ',':
 			return get();
 		case '(': case ')': case '+': case '-': case '*': case ';':
