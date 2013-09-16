@@ -17,6 +17,7 @@ bool identifier(Token_stream& ts)
 	if(t.kind != 'a')
 	{
 		ts.putback(t);
+		cout << "false" << t.kind << endl;
 		return false;
 	}
 	while(t.kind == 'a' || t.kind == '0')
@@ -31,16 +32,53 @@ bool identifier(Token_stream& ts)
 	cout << "REL: " << identifier_name << endl;
 	return true;
 }
-bool relation_name(Token_stream& ts)
-{
+bool relation_name(Token_stream& ts){
 	return identifier(ts);
 }
-bool expr(Token_stream& ts)
-{
+bool parenthesis(Token_stream& ts){
+	cout << "parenth" << endl;
+	vector<Token> tt;
+	Token t = ts.get();
+	if (t.kind == ' '){
+		t = ts.get();
+		tt.push_back(t);
+	}
+	else
+		tt.push_back(t);
+	if (t.kind != '('){
+		while(!tt.empty()){
+			ts.putback(tt.back());
+			tt.pop_back();
+		}
+		return false;
+	}
+	else{
+		t = ts.get();
+		tt.push_back(t);
+	}
+	while (t.kind != ')'){
+		if(t.kind == ';'){
+			while(!tt.empty()){
+				cout << tt.back().kind;
+				ts.putback(tt.back());
+				tt.pop_back();
+			}
+			cout << "parenth false" << endl;
+			return false;
+		}
+		t = ts.get();
+		tt.push_back(t);
+	}
+	while(!tt.empty()){
+		cout << "o: " << tt.back().kind << endl;
+		
+		if(tt.back().kind != '(' && tt.back().kind != ')'){
+			ts.putback(tt.back());
+			cout << "p: " << tt.back().kind << endl;
+		}
+		tt.pop_back();
+	}
 	return true;
-}
-bool atomic_expr(Token_stream& ts){
-	return relation_name(ts) || expr(ts);
 }
 bool name_check(Token_stream& ts, string input){
 	string comp = "";
@@ -66,15 +104,129 @@ bool name_check(Token_stream& ts, string input){
 		return true;
 	}
 	while(!tt.empty()){
-		char c = tt.back().value;
-		cout << c << endl;
 		ts.putback(tt.back());
 		tt.pop_back();
 	}
 	return false;
 }
+bool operator_check(Token_stream& ts, char c){
+	vector<Token> tt;
+	Token t = ts.get();
+	tt.push_back(t);
+	if(t.kind == ' '){
+		t = ts.get();
+		tt.push_back(t);
+	}
+	if(t.kind != c){
+		while(!tt.empty()){
+				ts.putback(tt.back());
+				tt.pop_back();
+		}
+		return false;
+	}
+	for(int i = 0; i < tt.size(); ++i){
+			cout << tt[i].kind << endl;
+	}
+	cout << "i did this for: " << c << endl;
+	return true;
+}
+bool atomic_expr(Token_stream& ts);
+bool U_diff_prod(Token_stream& ts){
+	cout << "union" << endl;
+	//parenthesis(ts);
+	return atomic_expr(ts) && (operator_check(ts, '+') || operator_check(ts, '-') || operator_check(ts, '*')) && atomic_expr(ts);
+}
+/*bool diff(Token_stream& ts){
+	cout << "diff" << endl;
+	return atomic_expr(ts) && operator_check(ts, '-') && atomic_expr(ts);
+}
+bool product(Token_stream& ts){
+	cout << "prod" << endl;
+	return atomic_expr(ts) && operator_check(ts, '*') && atomic_expr(ts);
+}*/
+bool expr(Token_stream& ts){
+	cout << "expr" << endl;
+	return U_diff_prod(ts);
+}
+bool atomic_expr(Token_stream& ts){
+	cout << "atomic" << endl;
+	return relation_name(ts) || (parenthesis(ts) && expr(ts));
+}
+bool literal_list(Token_stream& ts){
+	vector<Token> tt;
+	Token t = ts.get();
+	tt.push_back(t);
+	if(t.kind == ' '){
+		t = ts.get();
+		tt.push_back(t);
+	}
+	if(t.kind != '('){
+		ts.putback(t);
+		return false;
+	}
+	else{
+		t = ts.get();
+		tt.push_back(t);
+	}
+	while(t.kind != ')'){
+		if(t.kind == ' '){
+			t = ts.get();
+			tt.push_back(t);
+		}
+		if (t.kind == ';'){
+			while(!tt.empty()){
+				ts.putback(tt.back());
+				tt.pop_back();
+			}
+			return false;
+		}
+		if(t.kind!= '"'){
+			while(!tt.empty()){
+				ts.putback(tt.back());
+				tt.pop_back();
+			}
+			return false;
+		}
+		else{
+			t = ts.get();
+			tt.push_back(t);
+		}
+		while(t.kind != '"'){
+			if(t.kind == ' '){
+				t = ts.get();
+				tt.push_back(t);
+			}
+			if (t.kind == ';'){
+				while(!tt.empty()){
+					ts.putback(tt.back());
+					tt.pop_back();
+				}
+				return false;
+			}
+			if(t.kind != 'a' && t.kind != '"'){
+				while(!tt.empty()){
+					ts.putback(tt.back());
+					tt.pop_back();
+				}
+				return false;
+			}
+			if(t.kind != '"'){
+				t = ts.get();
+				tt.push_back(t);
+			}
+		}
+		if(t.kind != ')'){
+				t = ts.get();
+				tt.push_back(t);
+		}
+    }
+	return true;
+}
 bool insert(Token_stream& ts){
-	return name_check(ts, "INSERT") && name_check(ts, "INTO") && relation_name(ts) && name_check(ts, "VALUES") && name_check(ts, "FROM");
+	return (name_check(ts, "INSERT") && name_check(ts, "INTO") && relation_name(ts) 
+			&& name_check(ts, "VALUES") && name_check(ts, "FROM")) && literal_list(ts) ||
+			(name_check(ts, "INSERT") && name_check(ts, "INTO") && relation_name(ts) 
+			&& name_check(ts, "VALUES") && name_check(ts, "FROM") && name_check(ts, "RELATION") && expr(ts)) ;
 }
 bool show(Token_stream& ts){
 	return name_check(ts, "SHOW") && atomic_expr(ts);
@@ -97,21 +249,21 @@ bool command(Token_stream& ts)
 }
 bool query(Token_stream& ts)
 {
-	if(!relation_name(ts))
-		return false;
-	Token next = ts.get();
-	if(next.kind != ':')
-	{
-		ts.putback(next);
-		return false;
+	return relation_name(ts) && operator_check(ts, ':') && expr(ts);
+}
+bool termination(Token_stream& ts){
+	Token t = ts.get();
+	if (t.kind == ' '){
+		t = ts.get();
 	}
-	if(!expr(ts))
-		return false;
-	return true;
+	if (t.kind == ';'){
+		return true;
+	}
+	return false;
 }
 bool program(Token_stream& ts)
 {
-	return command(ts) || query(ts);
+	return (command(ts) || query(ts)) && termination (ts);
 }
 int main(){
   /*d.Create("Table1");
@@ -185,7 +337,7 @@ int main(){
   getline(cin, line);
   ts.ss << line;
   bool valid = true;
-  while(true)
+  /*while(true)
   {
 	Token t = ts.get();
 	//cout << t.kind << ", " << t.value << endl;
@@ -194,6 +346,7 @@ int main(){
 		return 0;
 	ts.putback(t);
 	cout << program(ts) << endl;
-  }
+  }*/
+  cout << program(ts) << endl;
   return 0;
 }
