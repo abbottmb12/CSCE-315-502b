@@ -69,7 +69,7 @@ Token Token_stream::get()
 			return Token(ch);
 		case ',':
 			return get();
-		case '(': case ')': case '+': case '-': case '*': case ';':
+		case '(': case ')': case '+': case '-': case '*': case ';': case '"':
 			return Token(ch);        // let each character represent itself
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
@@ -120,11 +120,6 @@ Token Token_stream::get()
 					return Token('|'); // let '|' represent "condition"
 				else if(val == "&&")
 					return Token('&'); // let '&' represent "conjunction"
-			}
-			break;
-		case '"':
-			{
-				return Token('"');
 			}
 			break;
 		default:
