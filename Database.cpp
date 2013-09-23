@@ -6,7 +6,7 @@ void Database:: Project(vector<string> attr_name, string rel_name){
 	for (int i = 0; i < relation.size(); ++i){
 		if (rel_name == relation[i].name){
 			Relation new_projection;    // create a new relation
-			new_projection.name = "Projection";    // rename the relation 
+			new_projection.name = "Expression";    // rename the relation 
 			for (int j = 0; j < attr_name.size(); ++j){
 				int attr_loc;
 				attr_loc = (relation[i].findAttribute(attr_name[j]));
@@ -20,8 +20,12 @@ void Database:: Project(vector<string> attr_name, string rel_name){
 				cerr << "None of the attributes requested were found to be projected from '" << rel_name << "'." <<endl;
 				return;
 			}
-			else 
-				Projection = new_projection;
+			else {
+				for (int i = 0; i < relation.size(); ++i){
+					if(relation[i].name == "Expression")
+					relation[i] = new_projection;
+				}
+			}
 			return;
 		}
 	}	
@@ -36,7 +40,7 @@ void Database:: Select(string attr_name, string condition, string cell_condition
 			if (attr_loc != -1){
 				Relation new_selection = relation[i];
 				new_selection.clear_attr_cells();
-				new_selection.name = "Selection";
+				new_selection.name = "Expression";
 				vector<string> getCells = relation[i].attr[attr_loc].getCells();
 				vector<int> condition_metLoc;
 				
@@ -116,7 +120,12 @@ void Database:: Select(string attr_name, string condition, string cell_condition
 				else{
 					for (int j = 0; j < condition_metLoc.size(); ++j){
 						new_selection.Insert(relation[i].getRow(condition_metLoc[j]));
-						Selection = new_selection;
+						for (int i = 0; i < relation.size(); ++i){
+							if(relation[i].name == "Expression"){
+								relation[i] = new_selection;
+								not_found = false;
+							}
+						}
 					}
 				}
 				return;
@@ -133,14 +142,22 @@ void Database:: Select(string attr_name, string condition, string cell_condition
 
 void Database::Update(string rel_name, string attr_name, string literal, string condition_attr, string condition, string condition_literal) {
 	Relation* r;
+	bool found = false;
 	for(int i = 0; i < relation.size(); i++)
 	{
 		if(rel_name == relation[i].name)
 		{
 			r = &relation[i];
+			found = true;
 			break;
 		}
 	}
+	
+	if(!found) {
+		cout << "Could not find a relation called " << rel_name << endl;
+		return;
+	}
+	
 	int attr_loc = r->findAttribute(condition_attr);    // Find the location of the attribute to be changed
 	if(attr_loc == -1)
 	{
@@ -240,13 +257,19 @@ void Database::Update(string rel_name, string attr_name, string literal, string 
 // Delete function is used to delete a certain tuple. it works pretty much like the update function.
 void Database::Delete(string rel_name, string condition_attr, string condition, string condition_literal) {
 	Relation* r;
+	bool found = false;
 	for(int i = 0; i < relation.size(); i++)
 	{
 		if(rel_name == relation[i].name)
 		{
 			r = &relation[i];
+			found = true;
 			break;
 		}
+	}
+	if(!found) {
+		cout << "Could not find a relation called " << rel_name << endl;
+		return;
 	}
 	int attr_loc = r->findAttribute(condition_attr);
 	if(attr_loc == -1)
@@ -391,7 +414,7 @@ void Database:: Create(string rel_name) {
 }
 
 
-//Delete a relation from the database
+/*//Delete a relation from the database
 void Database:: Delete(string rel_name) {
   for(int i = 0; i < relation.size(); i++)
   {
@@ -401,7 +424,7 @@ void Database:: Delete(string rel_name) {
 	}
   }
   cerr << "I did not find anything called " << rel_name << endl;
-}
+} */
 
 void Database:: Write(const string& rel_name) {
   cout << "Requires file I/O, will be done in the next part " << endl;
