@@ -1,0 +1,2 @@
+CREATE TABLE Shipments (Car_ID INTEGER, Name VARCHAR(1), model VARCHAR(1), year INTEGER) PRIMARY KEY (Car_ID);
+INSERT INTO Shipments VALUES FROM (7, "Audi", "A8", 2015);
